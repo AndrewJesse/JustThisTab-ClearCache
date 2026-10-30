@@ -1,8 +1,10 @@
 /**
- * Decide whether a tab has an http(s) origin, then clear only that origin's
- * HTTP cache. Never call browsingData without an origin: omitting `origins`
- * clears the whole profile.
+ * Decide whether a tab has an http(s) origin, then clear only that origin.
+ * Never call browsingData without an origin: omitting `origins` clears the
+ * whole profile. Only cache-like types from the allowlist are sent.
  */
+
+import { categoriesForTypes, toRemovalTypes } from "./settings.js";
 
 const WEB_PROTOCOLS = new Set(["http:", "https:"]);
 
@@ -13,16 +15,25 @@ const WEB_PROTOCOLS = new Set(["http:", "https:"]);
  */
 
 /**
- * @typedef {{ ok: true, origin: string } | { ok: false, reason: string }} ClearResult
+ * @typedef {{ ok: true, origin: string } | { ok: false, reason: string }} TargetResult
  */
 
 /**
- * @typedef {{ remove: (options: { origins: [string] }, types: { cache: true }) => Promise<void> }} BrowsingDataClient
+ * @typedef {{
+ *   ok: true,
+ *   origin: string,
+ *   categories: string[],
+ *   types: Record<string, true>
+ * } | { ok: false, reason: string }} ClearResult
+ */
+
+/**
+ * @typedef {{ remove: (options: { origins: string[] }, types: Record<string, true>) => Promise<void> }} BrowsingDataClient
  */
 
 /**
  * @param {TabLike | null | undefined} tab
- * @returns {ClearResult}
+ * @returns {TargetResult}
  */
 export function resolveTabTarget(tab) {
   if (!tab || typeof tab !== "object") {
@@ -53,11 +64,14 @@ export function resolveTabTarget(tab) {
 }
 
 /**
+ * Clear the selected cache types for this tab's origin only.
+ * When `selection` is omitted, only the HTTP cache is cleared.
  * @param {TabLike | null | undefined} tab
  * @param {BrowsingDataClient | null | undefined} browsingData
+ * @param {unknown} [selection]
  * @returns {Promise<ClearResult>}
  */
-export async function clearCacheForTab(tab, browsingData) {
+export async function clearCacheForTab(tab, browsingData, selection) {
   const target = resolveTabTarget(tab);
   if (!target.ok) {
     return target;
@@ -67,13 +81,27 @@ export async function clearCacheForTab(tab, browsingData) {
     return { ok: false, reason: "Cache clearing isn't available." };
   }
 
+  const types = selection === undefined || selection === null
+    ? { cache: true }
+    : toRemovalTypes(selection);
+
+  if (Object.keys(types).length === 0) {
+    return { ok: false, reason: "Choose at least one cache type in Settings." };
+  }
+
+  const removalTypes = { ...types };
   try {
-    await browsingData.remove({ origins: [target.origin] }, { cache: true });
+    await browsingData.remove({ origins: [target.origin] }, removalTypes);
   } catch (error) {
     return { ok: false, reason: formatClearError(error) };
   }
 
-  return { ok: true, origin: target.origin };
+  return {
+    ok: true,
+    origin: target.origin,
+    categories: categoriesForTypes(removalTypes),
+    types: removalTypes,
+  };
 }
 
 /**

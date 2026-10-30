@@ -3,10 +3,10 @@ import { describe, it } from "node:test";
 import { clearCacheForTab, resolveTabTarget } from "../src/clear-tab-cache.js";
 
 /**
- * @param {{ remove?: (options: { origins: string[] }, types: { cache: boolean }) => Promise<void> }} [impl]
+ * @param {{ remove?: (options: { origins: string[] }, types: Record<string, boolean>) => Promise<void> }} [impl]
  */
 function fakeBrowsingData(impl) {
-  /** @type {{ options: { origins: string[] }, types: { cache: boolean } }[]} */
+  /** @type {{ options: { origins: string[] }, types: Record<string, boolean> }[]} */
   const calls = [];
   return {
     calls,
@@ -94,25 +94,88 @@ describe("resolveTabTarget", () => {
 });
 
 describe("clearCacheForTab", () => {
-  it("removes only the HTTP cache for that origin", async () => {
+  it("removes only the HTTP cache for that origin when settings are omitted", async () => {
     const { browsingData, calls } = fakeBrowsingData();
     const result = await clearCacheForTab(
       { url: "https://example.com/a?b=1#c" },
       browsingData,
     );
 
-    assert.deepEqual(result, { ok: true, origin: "https://example.com" });
+    assert.deepEqual(result, {
+      ok: true,
+      origin: "https://example.com",
+      categories: ["HTTP cache"],
+      types: { cache: true },
+    });
     assert.equal(calls.length, 1);
     assert.deepEqual(calls[0].options, { origins: ["https://example.com"] });
     assert.deepEqual(Object.keys(calls[0].options), ["origins"]);
     assert.deepEqual(calls[0].types, { cache: true });
-    assert.deepEqual(Object.keys(calls[0].types), ["cache"]);
+    assert.equal("measured" in result, false);
+    assert.equal("files" in result, false);
+  });
+
+  it("sends only the enabled cache types and drops anything else", async () => {
+    const { browsingData, calls } = fakeBrowsingData();
+    const result = await clearCacheForTab(
+      { url: "https://example.com/path" },
+      browsingData,
+      {
+        cache: false,
+        cacheStorage: true,
+        fileSystems: true,
+        serviceWorkers: false,
+        cookies: true,
+        history: true,
+        passwords: true,
+        localStorage: true,
+        indexedDB: true,
+      },
+    );
+
+    assert.equal(result.ok, true);
+    assert.deepEqual(calls[0].options, { origins: ["https://example.com"] });
+    assert.deepEqual(calls[0].types, { cacheStorage: true, fileSystems: true });
+    assert.deepEqual(result.categories, ["Cache Storage", "File systems"]);
+  });
+
+  it("can clear every allowlisted cache type for one origin", async () => {
+    const { browsingData, calls } = fakeBrowsingData();
+    const result = await clearCacheForTab(
+      { url: "https://example.com/" },
+      browsingData,
+      { cache: true, cacheStorage: true, fileSystems: true, serviceWorkers: true },
+    );
+
+    assert.deepEqual(result.types, {
+      cache: true,
+      cacheStorage: true,
+      fileSystems: true,
+      serviceWorkers: true,
+    });
+    assert.deepEqual(calls[0].types, result.types);
+    assert.deepEqual(Object.keys(calls[0].options), ["origins"]);
+  });
+
+  it("does not call the API when every toggle is off", async () => {
+    const { browsingData, calls } = fakeBrowsingData();
+    const result = await clearCacheForTab(
+      { url: "https://example.com/" },
+      browsingData,
+      { cache: false, cacheStorage: false, fileSystems: false, serviceWorkers: false },
+    );
+
+    assert.deepEqual(result, {
+      ok: false,
+      reason: "Choose at least one cache type in Settings.",
+    });
+    assert.equal(calls.length, 0);
   });
 
   it("does not reuse a data-type object a caller could mutate", async () => {
     const { browsingData, calls } = fakeBrowsingData({
       async remove(_options, types) {
-        Object.assign(types, { cache: false });
+        Object.assign(types, { cache: false, cookies: true });
       },
     });
 
@@ -121,6 +184,7 @@ describe("clearCacheForTab", () => {
 
     assert.deepEqual(calls[1].types, { cache: true });
     assert.deepEqual(calls[1].options.origins, ["https://two.example"]);
+    assert.equal("cookies" in calls[1].types, false);
   });
 
   it("does not call browsingData for restricted pages, missing tabs, or empty URLs", async () => {

@@ -1,17 +1,18 @@
 {
   "manifest_version": 3,
   "name": "Just This Tab",
-  "version": "0.1.0",
-  "description": "Clear the HTTP cache for the current tab's site only. Other sites, cookies, and history are left alone.",
+  "version": "0.2.0",
+  "description": "Clear cache for this tab's site. Choose cache types, and auto-clear sites you list when they finish loading.",
   "minimum_chrome_version": "96",
   "incognito": "split",
-  "permissions": ["activeTab", "browsingData"],
+  "permissions": ["activeTab", "browsingData", "storage", "tabs"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "action": {
-    "default_title": "Clear cache for this tab",
+    "default_title": "Just This Tab",
+    "default_popup": "index.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -24,5 +25,8 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }

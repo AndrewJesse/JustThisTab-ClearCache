@@ -1,100 +1,56 @@
+import { planAutoClear } from "./src/auto-clear.js";
 import { clearCacheForTab } from "./src/clear-tab-cache.js";
+import { resultFromClear, saveLastResult } from "./src/result.js";
+import { loadSettings } from "./src/settings.js";
 
-const DEFAULT_TITLE = "Clear cache for this tab";
-const BUSY_COLOR = "#5f6368";
-const SUCCESS_COLOR = "#137333";
-const FAILURE_COLOR = "#c5221f";
-const BADGE_MS = 4000;
+const recentClears = new Map();
 
-const badgeGenerations = new Map();
-
-chrome.action.onClicked.addListener((tab) => {
-  void onActionClicked(tab);
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
+  if (changeInfo.status !== "complete") {
+    return;
+  }
+  void autoClearFinishedTab(tab);
 });
 
 /**
- * Toolbar click: clear the HTTP cache for this tab's origin, then show a
- * short badge. The tooltip explains the result until the badge clears.
- * @param {chrome.tabs.Tab | undefined} tab
+ * A full load or refresh of a matching tab clears that tab's origin only.
+ * @param {chrome.tabs.Tab} tab
  */
-async function onActionClicked(tab) {
-  const tabId = badgeTabId(tab);
+async function autoClearFinishedTab(tab) {
   try {
-    await setBadge(tabId, {
-      text: "...",
-      color: BUSY_COLOR,
-      title: "Clearing cache for this tab…",
-    });
-
-    const result = await clearCacheForTab(tab, chrome.browsingData);
-    if (result.ok) {
-      await setBadge(tabId, {
-        text: "OK",
-        color: SUCCESS_COLOR,
-        title: `Cleared cache for ${result.origin}. Refresh the page to load fresh files.`,
-      });
-    } else {
-      await setBadge(tabId, {
-        text: "!",
-        color: FAILURE_COLOR,
-        title: result.reason,
-      });
-    }
-  } catch (error) {
-    const reason = error instanceof Error && error.message
-      ? error.message
-      : "Couldn't clear the cache for this tab.";
-    try {
-      await setBadge(tabId, {
-        text: "!",
-        color: FAILURE_COLOR,
-        title: reason,
-      });
-    } catch {
-      // The toolbar action is unavailable; avoid an unhandled rejection.
-    }
-  }
-
-  scheduleBadgeClear(tabId);
-}
-
-/**
- * @param {chrome.tabs.Tab | undefined} tab
- * @returns {number | undefined}
- */
-function badgeTabId(tab) {
-  const id = tab && tab.id;
-  return Number.isInteger(id) && id >= 0 ? id : undefined;
-}
-
-/**
- * @param {number | undefined} tabId
- * @param {{ text: string, color: string, title: string }} badge
- */
-async function setBadge(tabId, badge) {
-  const scope = tabId === undefined ? {} : { tabId };
-  await chrome.action.setBadgeBackgroundColor({ ...scope, color: badge.color });
-  if (typeof chrome.action.setBadgeTextColor === "function") {
-    await chrome.action.setBadgeTextColor({ ...scope, color: "#ffffff" });
-  }
-  await chrome.action.setBadgeText({ ...scope, text: badge.text });
-  await chrome.action.setTitle({ ...scope, title: badge.title });
-}
-
-/**
- * @param {number | undefined} tabId
- */
-function scheduleBadgeClear(tabId) {
-  const key = tabId === undefined ? "all" : String(tabId);
-  const generation = (badgeGenerations.get(key) ?? 0) + 1;
-  badgeGenerations.set(key, generation);
-
-  setTimeout(() => {
-    if (badgeGenerations.get(key) !== generation) {
+    const settings = await loadSettings(chrome.storage);
+    const plan = planAutoClear(tab, settings);
+    if (!plan.clear) {
       return;
     }
-    const scope = tabId === undefined ? {} : { tabId };
-    chrome.action.setBadgeText({ ...scope, text: "" }).catch(() => {});
-    chrome.action.setTitle({ ...scope, title: DEFAULT_TITLE }).catch(() => {});
-  }, BADGE_MS);
+    if (clearedMomentsAgo(tab.id, plan.origin)) {
+      return;
+    }
+    const cleared = await clearCacheForTab(tab, chrome.browsingData, plan.types);
+    await saveLastResult(chrome.storage, resultFromClear(cleared));
+  } catch {
+    // The browser may be shutting the worker down mid-call.
+  }
+}
+
+/**
+ * Collapse duplicate "complete" events from one navigation.
+ * A real refresh a moment later still clears.
+ * @param {number | undefined} tabId
+ * @param {string} origin
+ * @returns {boolean}
+ */
+function clearedMomentsAgo(tabId, origin) {
+  const key = `${tabId ?? "unknown"}\n${origin}`;
+  const now = Date.now();
+  const previous = recentClears.get(key) ?? 0;
+  recentClears.set(key, now);
+  if (recentClears.size > 200) {
+    for (const [entry, time] of recentClears) {
+      if (now - time > 10_000) {
+        recentClears.delete(entry);
+      }
+    }
+  }
+  return now - previous < 250;
 }
