@@ -47,7 +47,7 @@ These are real [`chrome.browsingData`](https://developer.chrome.com/docs/extensi
 | --- | --- | --- | --- |
 | HTTP cache | `cache` | On | The browser HTTP cache for that origin |
 | Cache Storage | `cacheStorage` | Off | Cache Storage API entries for that origin |
-| File systems | `fileSystems` | Off | That origin's sandbox file system (File System API) |
+| File systems | `fileSystems` | Off | Sandbox files stored for this site |
 | Service workers | `serviceWorkers` | Off | Service worker registrations for that origin |
 
 `appcache` and `webSQL` are still accepted by the API and then ignored (Chrome removed them in version 152), so they are not toggles. Cookies, history, passwords, downloads, form data, `localStorage`, and IndexedDB are never sent.

@@ -71,7 +71,7 @@ export function resultLines(view) {
   if (!view) {
     return {
       kind: "empty",
-      text: "After a clear, the origin and categories show up here.",
+      text: "Results appear here after a clear.",
     };
   }
   if (view.ok !== true) {

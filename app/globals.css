@@ -21,6 +21,8 @@ html,
 body {
   margin: 0;
   width: 320px;
+  max-height: 580px;
+  overflow: auto;
   background: #fff;
   color: var(--text);
 }
@@ -45,11 +47,15 @@ input {
   gap: 10px;
   align-items: center;
   padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--line);
 }
 
 .logo {
   flex: 0 0 auto;
   display: block;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
 }
 
 .titles {

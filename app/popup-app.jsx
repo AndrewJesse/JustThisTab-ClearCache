@@ -180,7 +180,7 @@ export default function PopupApp() {
   return (
     <div className="popup">
       <header className="header">
-        <img className="logo" src="icons/icon32.png" width={22} height={22} alt="" />
+        <img className="logo" src="icons/icon32.png" width={32} height={32} alt="" />
         <div className="titles">
           <h1>Just This Tab</h1>
           <p id="tab-summary" className={summaryClass}>{tabState.summary}</p>

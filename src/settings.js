@@ -31,7 +31,7 @@ export const CACHE_CATEGORIES = [
   {
     id: "fileSystems",
     label: "File systems",
-    description: "This site's sandbox file system (File System API).",
+    description: "Sandbox files stored for this site.",
     defaultEnabled: false,
   },
   {
