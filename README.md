@@ -32,9 +32,9 @@ Incognito is `split`. Enable **Allow in Incognito** to use the extension there. 
 
 ## The controls
 
-**Clear This Tab's Cache** (broom) clears the current tab's origin using the toggles in Settings. The path, query, and hash are ignored. `https://example.com/docs` and `https://example.com` are the same origin. `https://www.example.com` is not. The tab is not reloaded.
+**Clear This Tab's Cache** clears the current tab's origin using the toggles in Settings. The path, query, and hash are ignored. `https://example.com/docs` and `https://example.com` are the same origin. `https://www.example.com` is not. The tab is not reloaded.
 
-**Settings** (gear) opens a nested menu in the popup.
+**Settings** opens the options in the popup.
 
 - **What gets cleared** is four independent toggles. They are saved in `chrome.storage.sync` and mirrored to `chrome.storage.local` (local is used if sync is unavailable). The newer copy wins.
 - **Auto-clear origins** adds and removes origins or origin patterns. When a matching tab finishes a full load or a refresh, the extension clears that tab's origin with the same toggles. Other origins are not cleared.
@@ -76,7 +76,7 @@ Auto-clear runs from `chrome.tabs.onUpdated` when the tab status is `complete` (
 
 ## What the result line measures
 
-After a clear, the bottom of the popup shows a green check, **Cache cleared**, the origin, and the categories that ran. For example: `HTTP cache, Service workers`.
+After a clear, the popup shows **Cache cleared**, the origin, and the categories that ran. For example: `HTTP cache, Service workers`.
 
 `chrome.browsingData.remove` resolves with no file list, byte count, or content types. The popup does not invent those numbers and does not label anything as an estimate. Chrome does not tell the extension which files were in the HTTP cache.
 

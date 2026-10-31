@@ -25,7 +25,7 @@ Click the toolbar icon, then Clear This Tab's Cache. That removes the cache type
 
 You can list origins that clear themselves when a matching tab finishes loading or is refreshed. Only that tab's origin is cleared.
 
-After a clear, the popup shows a green check, the origin, and the categories that ran. Chrome does not report a file count or a size, so this extension does not show those numbers.
+After a clear, the popup shows Cache cleared, the origin, and the categories that ran. Chrome does not report a file count or a size, so this extension does not show those numbers.
 
 Chrome pages, about pages, and local files cannot be cleared. The button stays off and nothing is deleted.
 

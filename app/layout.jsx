@@ -6,13 +6,13 @@ export const metadata = {
 };
 
 export const viewport = {
-  width: 320,
+  width: 380,
   initialScale: 1,
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className="extension-popup">
       <body>{children}</body>
     </html>
   );

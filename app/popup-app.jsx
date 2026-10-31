@@ -13,7 +13,7 @@ import {
   saveSettings,
 } from "../src/settings.js";
 import { describeTab } from "../src/tab-status.js";
-import { BroomIcon, CheckIcon, ChevronIcon, GearIcon } from "./icons.jsx";
+import { CheckIcon } from "./icons.jsx";
 
 export default function PopupApp() {
   const [tabState, setTabState] = useState({
@@ -174,46 +174,48 @@ export default function PopupApp() {
   }
 
   const lines = resultLines(result);
-  const summaryClass = tabState.pending || tabState.clearable ? "" : "is-blocked";
+  const blocked = !tabState.pending && !tabState.clearable;
   const clearDisabled = busy || tabState.pending || !tabState.clearable;
 
   return (
     <div className="popup">
       <header className="header">
-        <img className="logo" src="icons/icon32.png" width={32} height={32} alt="" />
-        <div className="titles">
-          <h1>Just This Tab</h1>
-          <p id="tab-summary" className={summaryClass}>{tabState.summary}</p>
-        </div>
+        <h1>
+          <img className="logo" src="icons/icon32.png" width={22} height={22} alt="" />
+          Just This Tab
+        </h1>
+        <p className="device-label">On this device</p>
       </header>
 
-      <button
-        type="button"
-        className="menu-button"
-        onClick={onClear}
-        disabled={clearDisabled}
-        aria-describedby="tab-summary"
-        aria-busy={busy}
-      >
-        <BroomIcon />
-        <span className="menu-label">{busy ? "Clearing…" : "Clear This Tab's Cache"}</span>
-      </button>
+      <section className="panel" aria-busy={busy}>
+        <p className="eyebrow">This tab</p>
+        <h2 className="panel-title">Clear cache</h2>
+        <p id="tab-summary" className={blocked ? "tool-alert" : undefined}>{tabState.summary}</p>
+        <button
+          type="button"
+          className="action-button"
+          onClick={onClear}
+          disabled={clearDisabled}
+          aria-describedby="tab-summary"
+          aria-busy={busy}
+        >
+          {busy ? "Clearing…" : "Clear This Tab's Cache"}
+        </button>
+      </section>
 
-      <button
-        type="button"
-        className="menu-button"
-        aria-expanded={settingsOpen}
-        aria-controls="settings-panel"
-        onClick={() => setSettingsOpen((open) => !open)}
-      >
-        <GearIcon />
-        <span className="menu-label">Settings</span>
-        <ChevronIcon />
-      </button>
+      <div className="tabs">
+        <button
+          type="button"
+          className="tab"
+          aria-expanded={settingsOpen}
+          aria-controls="settings-panel"
+          onClick={() => setSettingsOpen((open) => !open)}
+        >Settings</button>
+      </div>
 
       <div id="settings-panel" className="settings" hidden={!settingsOpen}>
         <p className="group-label" id="clear-types-label">What gets cleared</p>
-        <div role="group" aria-labelledby="clear-types-label">
+        <div className="toggle-group" role="group" aria-labelledby="clear-types-label">
           {CACHE_CATEGORIES.map((category) => {
             const inputId = `clear-${category.id}`;
             const helpId = `${inputId}-help`;
@@ -261,9 +263,9 @@ export default function PopupApp() {
                 }
               }}
             />
-            <button type="submit">Add</button>
+            <button className="action-button" type="submit">Add</button>
           </div>
-          {formError ? <p className="form-error" id="auto-clear-error" role="alert">{formError}</p> : null}
+          {formError ? <p className="form-error tool-alert" id="auto-clear-error" role="alert">{formError}</p> : null}
           {settings.autoClear.length === 0 ? (
             <p className="empty-origins">No origins yet. Add example.com or *.example.com.</p>
           ) : (
@@ -271,26 +273,23 @@ export default function PopupApp() {
               {settings.autoClear.map((pattern) => (
                 <li className="origin-row" key={pattern}>
                   <span>{pattern}</span>
-                  <button type="button" aria-label={`Remove ${pattern}`} onClick={() => { void onRemove(pattern); }}>
+                  <button className="text-button" type="button" aria-label={`Remove ${pattern}`} onClick={() => { void onRemove(pattern); }}>
                     Remove
                   </button>
                 </li>
               ))}
             </ul>
           )}
-          {settingsError ? <p className="settings-error" role="alert">{settingsError}</p> : null}
+          {settingsError ? <p className="settings-error tool-alert" role="alert">{settingsError}</p> : null}
         </form>
       </div>
 
       {lines.kind === "empty" ? null : (
         <footer className="result" role="status" aria-live="polite">
           {lines.kind === "error" ? (
-            <div className="result-row">
-              <span className="mark mark-error" aria-hidden="true">!</span>
-              <div>
-                <p className="result-title is-error">{lines.title}</p>
-                <p className="result-detail">{lines.detail}</p>
-              </div>
+            <div className="tool-alert">
+              <p className="result-title">{lines.title}</p>
+              <p className="result-detail">{lines.detail}</p>
             </div>
           ) : null}
           {lines.kind === "success" ? (
@@ -305,7 +304,7 @@ export default function PopupApp() {
           ) : null}
         </footer>
       )}
-      <p className={lines.kind === "empty" ? "company company-solo" : "company"}>
+      <p className="company">
         <a href="https://free-utils.com" target="_blank" rel="noopener noreferrer">More from Free-Utils.com</a>
       </p>
     </div>
