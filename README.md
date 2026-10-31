@@ -2,6 +2,8 @@
 
 Clear cache for the site in the current tab, and leave every other origin alone.
 
+Just This Tab is a [Free-Utils](https://free-utils.com) extension. The company site is [https://free-utils.com](https://free-utils.com).
+
 The toolbar button opens a popup. It does not clear anything until you choose **Clear This Tab's Cache** or a site you listed finishes loading.
 
 ## Load unpacked

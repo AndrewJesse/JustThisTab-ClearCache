@@ -304,6 +304,9 @@ export default function PopupApp() {
           </div>
         ) : null}
       </footer>
+      <p className="company">
+        <a href="https://free-utils.com" target="_blank" rel="noopener noreferrer">Free-Utils</a>
+      </p>
     </div>
   );
 }
