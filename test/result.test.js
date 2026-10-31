@@ -53,7 +53,9 @@ describe("result lines", () => {
   });
 
   it("keeps an empty state and a failure distinct from a success", () => {
-    assert.equal(resultLines(null).kind, "empty");
+    const empty = resultLines(null);
+    assert.equal(empty.kind, "empty");
+    assert.equal("text" in empty, false);
     const failure = resultLines(resultFromClear({ ok: false, reason: "Chrome pages can't be cleared." }));
     assert.deepEqual(failure, {
       kind: "error",

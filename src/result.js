@@ -53,8 +53,7 @@ export function resultFromClear(clearResult) {
 /**
  * @param {ResultView | null | undefined} view
  * @returns {{
- *   kind: "empty",
- *   text: string
+ *   kind: "empty"
  * } | {
  *   kind: "error",
  *   title: string,
@@ -69,10 +68,7 @@ export function resultFromClear(clearResult) {
  */
 export function resultLines(view) {
   if (!view) {
-    return {
-      kind: "empty",
-      text: "Results appear here after a clear.",
-    };
+    return { kind: "empty" };
   }
   if (view.ok !== true) {
     return {

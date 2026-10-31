@@ -282,30 +282,31 @@ export default function PopupApp() {
         </form>
       </div>
 
-      <footer className="result" role="status" aria-live="polite">
-        {lines.kind === "empty" ? <p className="result-empty">{lines.text}</p> : null}
-        {lines.kind === "error" ? (
-          <div className="result-row">
-            <span className="mark mark-error" aria-hidden="true">!</span>
-            <div>
-              <p className="result-title is-error">{lines.title}</p>
-              <p className="result-detail">{lines.detail}</p>
+      {lines.kind === "empty" ? null : (
+        <footer className="result" role="status" aria-live="polite">
+          {lines.kind === "error" ? (
+            <div className="result-row">
+              <span className="mark mark-error" aria-hidden="true">!</span>
+              <div>
+                <p className="result-title is-error">{lines.title}</p>
+                <p className="result-detail">{lines.detail}</p>
+              </div>
             </div>
-          </div>
-        ) : null}
-        {lines.kind === "success" ? (
-          <div className="result-row">
-            <CheckIcon />
-            <div>
-              <p className="result-title">{lines.title}</p>
-              {lines.origin ? <p className="result-origin">{lines.origin}</p> : null}
-              {lines.categories ? <p className="result-cats">{lines.categories}</p> : null}
+          ) : null}
+          {lines.kind === "success" ? (
+            <div className="result-row">
+              <CheckIcon />
+              <div>
+                <p className="result-title">{lines.title}</p>
+                {lines.origin ? <p className="result-origin">{lines.origin}</p> : null}
+                {lines.categories ? <p className="result-cats">{lines.categories}</p> : null}
+              </div>
             </div>
-          </div>
-        ) : null}
-      </footer>
-      <p className="company">
-        <a href="https://free-utils.com" target="_blank" rel="noopener noreferrer">Free-Utils</a>
+          ) : null}
+        </footer>
+      )}
+      <p className={lines.kind === "empty" ? "company company-solo" : "company"}>
+        <a href="https://free-utils.com" target="_blank" rel="noopener noreferrer">More from Free-Utils.com</a>
       </p>
     </div>
   );
