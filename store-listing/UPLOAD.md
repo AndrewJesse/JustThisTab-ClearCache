@@ -40,7 +40,7 @@ Upload these files from `store-listing/`. Sizes match the [store image requireme
 
 Upload the screenshots in that order: the toolbar icon, the popup with Clear This Tab's Cache and Settings, the Settings menu, then the green check after a clear. They were captured from the extension running in Chrome on https://example.com.
 
-Use `store-icon-128.png` for the store icon. It is the grey trash can with an orange flame, the same icon Chrome shows on the toolbar. Do not upload `free-utils-capybara.png` as the store icon. That file is the Free-Utils company mark from https://free-utils.com/brand-logo.webp. The site uses the capybara as the company mark, not as this extension's icon. The promo tiles include it only as that company mark.
+Use `store-icon-128.png` for the store icon. It is the grey trash can with an orange flame, the same icon Chrome shows on the toolbar. Do not upload `free-utils-capybara.png` as the store icon. That file is the Free-Utils company mark, `public/brand-logo.png` from the free-utils.com source repository (AndrewJesse/free-utils.com). The site uses the capybara as the company mark, not as this extension's icon. The promo tiles include it only as that company mark.
 
 ## 3. Privacy
 

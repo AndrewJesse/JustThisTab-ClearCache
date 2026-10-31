@@ -44,4 +44,4 @@ Permissions stay on your device. activeTab reads the current tab when you open t
 
 The store icon is `store-icon-128.png`. It is the extension's grey trash can with an orange flame, the same artwork as the toolbar icon in the package.
 
-`free-utils-capybara.png` is the company mark from https://free-utils.com/brand-logo.webp. free-utils.com uses that capybara as the Free-Utils mark, not as the icon for this extension, so it is not the store icon. The small promo tile and the marquee tile show the trash can as the product and the capybara as the company mark.
+`free-utils-capybara.png` is the company mark, the file `public/brand-logo.png` from the free-utils.com source repository (AndrewJesse/free-utils.com). free-utils.com uses that capybara as the Free-Utils mark, not as the icon for this extension, so it is not the store icon. The small promo tile and the marquee tile show the trash can as the product and the capybara as the company mark.
